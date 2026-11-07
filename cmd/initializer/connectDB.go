@@ -11,7 +11,7 @@ import (
 func ConnectDB() *pgxpool.Pool {
 	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		fmt.Print(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
 	return pool

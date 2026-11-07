@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"gomicroservice/cmd/initializer"
 	catalogpb "gomicroservice/proto"
 	"log"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -24,6 +26,20 @@ func main() {
 	}
 	defer conn.Close()
 	catalogClient := catalogpb.NewCatalogServiceClient(conn)
+	ampCon, err := amqp.Dial("amqp://homefix:homefix@localhost:5672/")
+	if err != nil {
+		log.Fatal("ampConError : ", err)
+	}
+	defer ampCon.Close()
+	ch, err := ampCon.Channel()
+	if err != nil {
+		log.Fatal("ch Error : ", err)
+	}
+	defer ch.Close()
+	_, err = ch.QueueDeclare("book.created", true, false, false, false, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	app := fiber.New()
 	app.Use(cors.New())
 
@@ -116,12 +132,23 @@ func main() {
 		 RETURNING id, service_id, customer_name, status, create_at`,
 			body.ServiceID, customerName,
 		).Scan(&b.ID, &b.ServiceID, &b.CustomerName, &b.Status, &b.CreateAt)
+		paylaod, err := json.Marshal(bookingCreated{
+			BookingID:    b.ID,
+			ServiceID:    b.ServiceID,
+			CustomerName: b.CustomerName,
+		})
 		if err != nil {
 			log.Printf("insert booking: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
+		//publish only  after rows is saved
+		err = ch.PublishWithContext(context.Background(), "", "booking.created", false, false, amqp.Publishing{
+			ContentType:  "aaplication/json",
+			DeliveryMode: amqp.Persistent,
+			Body:         paylaod,
+		})
 
 		return c.Status(fiber.StatusCreated).JSON(b)
 	})
@@ -137,6 +164,12 @@ type booking struct {
 }
 
 type bookingRequest struct {
+	ServiceID    int64  `json:"service_id"`
+	CustomerName string `json:"customer_name"`
+}
+
+type bookingCreated struct {
+	BookingID    int64  `json:"booking_id"`
 	ServiceID    int64  `json:"service_id"`
 	CustomerName string `json:"customer_name"`
 }
