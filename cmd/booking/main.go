@@ -36,7 +36,7 @@ func main() {
 		log.Fatal("ch Error : ", err)
 	}
 	defer ch.Close()
-	_, err = ch.QueueDeclare("book.created", true, false, false, false, nil)
+	_, err = ch.QueueDeclare("booking.created", true, false, false, false, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
