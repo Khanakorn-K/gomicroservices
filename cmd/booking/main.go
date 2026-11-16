@@ -43,6 +43,10 @@ func main() {
 	}
 	app := fiber.New()
 	app.Use(cors.New())
+	// ฝึกทำ
+	app.Get("bookings/service:id", func(c fiber.Ctx) error {
+		catalogClient.GetServiceByID()
+	})
 
 	app.Get("/bookings", func(c fiber.Ctx) error {
 		rows, err := pool.Query(c.Context(),
