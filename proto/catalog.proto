@@ -6,6 +6,8 @@ option go_package = "gomicroservice/proto;catalogpb";
 
 service CatalogService {
   rpc CheckServiceExists (CheckServiceRequest) returns (CheckServiceResponse);
+
+  rpc GetServiceByID(GetServiceRequest) returns (GetServiceResponse);
 }
 
 message CheckServiceRequest {
@@ -14,4 +16,13 @@ message CheckServiceRequest {
 
 message CheckServiceResponse {
   bool exists = 1;
+}
+
+message GetServiceRequest {
+  int64 service_id = 1;
+}
+
+message GetServiceResponse {
+  int64  id   = 1;
+  string name = 2;
 }

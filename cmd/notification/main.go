@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	//Worker ขอเชื่อมต่อไปหา RabbitMQ ที่ localhost:5672
 	conn, err := amqp.Dial("amqp://homefix:homefix@localhost:5672/")
 	if err != nil {
 		log.Fatal("ampConError : ", err)

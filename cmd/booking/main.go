@@ -26,6 +26,7 @@ func main() {
 	}
 	defer conn.Close()
 	catalogClient := catalogpb.NewCatalogServiceClient(conn)
+	//Booking Service ขอเชื่อมต่อไปหา RabbitMQ ที่ localhost:5672
 	ampCon, err := amqp.Dial("amqp://homefix:homefix@localhost:5672/")
 	if err != nil {
 		log.Fatal("ampConError : ", err)

@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	CatalogService_CheckServiceExists_FullMethodName = "/catalog.CatalogService/CheckServiceExists"
+	CatalogService_GetServiceByID_FullMethodName     = "/catalog.CatalogService/GetServiceByID"
 )
 
 // CatalogServiceClient is the client API for CatalogService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CatalogServiceClient interface {
 	CheckServiceExists(ctx context.Context, in *CheckServiceRequest, opts ...grpc.CallOption) (*CheckServiceResponse, error)
+	GetServiceByID(ctx context.Context, in *GetServiceRequest, opts ...grpc.CallOption) (*GetServiceResponse, error)
 }
 
 type catalogServiceClient struct {
@@ -47,11 +49,22 @@ func (c *catalogServiceClient) CheckServiceExists(ctx context.Context, in *Check
 	return out, nil
 }
 
+func (c *catalogServiceClient) GetServiceByID(ctx context.Context, in *GetServiceRequest, opts ...grpc.CallOption) (*GetServiceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetServiceResponse)
+	err := c.cc.Invoke(ctx, CatalogService_GetServiceByID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CatalogServiceServer is the server API for CatalogService service.
 // All implementations must embed UnimplementedCatalogServiceServer
 // for forward compatibility.
 type CatalogServiceServer interface {
 	CheckServiceExists(context.Context, *CheckServiceRequest) (*CheckServiceResponse, error)
+	GetServiceByID(context.Context, *GetServiceRequest) (*GetServiceResponse, error)
 	mustEmbedUnimplementedCatalogServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedCatalogServiceServer struct{}
 
 func (UnimplementedCatalogServiceServer) CheckServiceExists(context.Context, *CheckServiceRequest) (*CheckServiceResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CheckServiceExists not implemented")
+}
+func (UnimplementedCatalogServiceServer) GetServiceByID(context.Context, *GetServiceRequest) (*GetServiceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetServiceByID not implemented")
 }
 func (UnimplementedCatalogServiceServer) mustEmbedUnimplementedCatalogServiceServer() {}
 func (UnimplementedCatalogServiceServer) testEmbeddedByValue()                        {}
@@ -104,6 +120,24 @@ func _CatalogService_CheckServiceExists_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CatalogService_GetServiceByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetServiceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CatalogServiceServer).GetServiceByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CatalogService_GetServiceByID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CatalogServiceServer).GetServiceByID(ctx, req.(*GetServiceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CatalogService_ServiceDesc is the grpc.ServiceDesc for CatalogService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var CatalogService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckServiceExists",
 			Handler:    _CatalogService_CheckServiceExists_Handler,
+		},
+		{
+			MethodName: "GetServiceByID",
+			Handler:    _CatalogService_GetServiceByID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

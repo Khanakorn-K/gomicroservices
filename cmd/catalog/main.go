@@ -31,6 +31,30 @@ func (s *catalogServer) CheckServiceExists(ctx context.Context, req *catalogpb.C
 	return &catalogpb.CheckServiceResponse{Exists: exists}, nil
 }
 
+func (s *catalogServer) GetServiceByID(
+	ctx context.Context,
+	req *catalogpb.GetServiceRequest,
+) (*catalogpb.GetServiceResponse, error) {
+
+	var id int64
+	var name string
+
+	err := s.pool.QueryRow(
+		ctx,
+		"SELECT id, name FROM services WHERE id = $1",
+		req.GetServiceId(),
+	).Scan(&id, &name)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &catalogpb.GetServiceResponse{
+		Id:   id,
+		Name: name,
+	}, nil
+}
+
 type service struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
